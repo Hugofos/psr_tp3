@@ -1,8 +1,8 @@
 # psr_tp3
-
-Tiago Pereira - 
-Hugo Silva -
-Diogo Lapa -
+Trabalho realizado por
+- Tiago Pereira 98360
+- Hugo Silva 86157
+- Diogo Lapa 117296
 
 Este trabalho foi feito no ambito da cadeira Programação de Sistemas Robóticos, sendo o terceiro destes trabalhos para avaliação.
 
@@ -13,11 +13,11 @@ Esta simulação passa-se no cenário AWS small house e tem como objetivo o mape
 Para executar este nosso programa, deverá:
 
 - Carregar o simulador Gazebo com o devido mapa
-  ```
+  ```bash
     roslaunch psr_tp3 gazebo.launch
   ```
 - Carregar o robô waffle_pi para o mapa
-    ```
+    ```bash
     roslaunch psr_tp3 bringup.launch
   ```
 
