@@ -10,6 +10,11 @@ O trabalho consiste no desenvolvimento de um sistema robótico que funcione como
 
 Esta simulação passa-se no cenário AWS small house e tem como objetivo o mapeamento do cenário através da movimentação do robô pelo apartamento. Estes movimentos podem ser feitos de diversas formas, por condução manual, por consução autónoma com alvo fixo ou através de informação passada pelo terminal. Aliado a isto, o robô deverá ainda executar um determinado número de missões pré-definidas e sincronamente analisar o ambiente ao seu redor e detetar objetos ao longo do seu trajeto.
 
+Instale os requisitos:
+```bash
+pip install -r requirements.txt
+```
+
 Para executar este nosso programa, deverá:
 
 - Carregar o simulador Gazebo com o devido mapa
