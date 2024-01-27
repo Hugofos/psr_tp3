@@ -13,42 +13,11 @@ from move_base_msgs.msg import MoveBaseActionResult
 
 server = None
 marker_pos = 0.5
+empty_marker = None
 
 menu_handler = MenuHandler()
 
 h_first_entry = 0
-h_mode_last = 0
-
-
-def enableCb(feedback):
-    handle = feedback.menu_entry_id
-    state = menu_handler.getCheckState(handle)
-
-    if state == MenuHandler.CHECKED:
-        menu_handler.setCheckState(handle, MenuHandler.UNCHECKED)
-        rospy.loginfo("Hiding first menu entry")
-        menu_handler.setVisible(h_first_entry, False)
-    else:
-        menu_handler.setCheckState(handle, MenuHandler.CHECKED)
-        rospy.loginfo("Showing first menu entry")
-        menu_handler.setVisible(h_first_entry, True)
-
-    menu_handler.reApply(server)
-    rospy.loginfo("update")
-    server.applyChanges()
-
-
-def modeCb(feedback):
-    global h_mode_last
-    menu_handler.setCheckState(h_mode_last, MenuHandler.UNCHECKED)
-    h_mode_last = feedback.menu_entry_id
-    menu_handler.setCheckState(h_mode_last, MenuHandler.CHECKED)
-
-    rospy.loginfo("Switching to menu entry #" + str(h_mode_last))
-    menu_handler.reApply(server)
-    print("DONE")
-    server.applyChanges()
-
 
 def makeBox(msg):
     marker = Marker()
@@ -64,14 +33,12 @@ def makeBox(msg):
 
     return marker
 
-
 def makeBoxControl(msg):
     control = InteractiveMarkerControl()
     control.always_visible = True
     control.markers.append(makeBox(msg))
     msg.controls.append(control)
     return control
-
 
 def makeEmptyMarker(dummyBox=True):
     global marker_pos
@@ -81,7 +48,6 @@ def makeEmptyMarker(dummyBox=True):
     marker_pos += 1
     int_marker.scale = 1
     return int_marker
-
 
 def makeMenuMarker(name):
     int_marker = makeEmptyMarker()
@@ -97,14 +63,9 @@ def makeMenuMarker(name):
 
     server.insert(int_marker)
 
+def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher):
+    updateText('Moving to ' + location)
 
-def deepCb(feedback):
-    rospy.loginfo("The deep sub-menu has been found.")
-
-
-def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher, text_marker_publisher, text_marker):
-    text_marker.text = 'Moving to ' + location
-    text_marker_publisher.publish(text_marker)
     print('Called moving to ' + location)
     p = Pose()
     p.position = Point(x=x, y=y, z=z)
@@ -119,21 +80,28 @@ def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher, text_marker_pub
     goal_publisher.publish(ps)
 
     result_msg = rospy.wait_for_message('move_base/result', MoveBaseActionResult)
+
+    updateText(result_msg.status.text)
     print(result_msg.status.text)
+
+def updateText(text):
+    empty_marker.controls[0].markers[0].text = text
+    server.erase('text_marker')
+    server.insert(empty_marker)
+
+    server.applyChanges()
 
 def main():
 
-    global server
+    global server, h_first_entry, empty_marker
 
     # -------------------------------
     # Initialization
     # -------------------------------
     rospy.init_node("mission_manager")
 
-    # Create a publisher for the text marker
-    text_marker_publisher = rospy.Publisher('/text_marker', Marker, queue_size=1)
-
     empty_marker = makeEmptyMarker()
+    empty_marker.name = 'text_marker'
     empty_marker.pose.position.z = 0.5
 
     # Create a text marker
@@ -162,7 +130,6 @@ def main():
     # Publish the empty marker (which contains the text marker)
     server.insert(empty_marker)
 
-    global h_first_entry, h_mode_last
     h_first_entry = menu_handler.insert("Move to")
 
     entry = menu_handler.insert("kitchen", parent=h_first_entry,
@@ -170,16 +137,14 @@ def main():
                                                  x=6.568593, y=-1.788789, z=0,
                                                  R=0, P=0, Y=-1.504141,
                                                  location='kitchen',
-                                                 goal_publisher=goal_publisher, text_marker_publisher = text_marker_publisher, text_marker = text_marker))
+                                                 goal_publisher=goal_publisher))
 
     entry = menu_handler.insert("bedroom", parent=h_first_entry,
                                 callback=partial(moveTo,
                                                  x=-4.409525, y=-0.182006, z=0,
                                                  R=-0.000007, P=0.003198, Y=1.980398,
                                                  location='bedroom',
-                                                 goal_publisher=goal_publisher, text_marker_publisher = text_marker_publisher, text_marker = text_marker))
-
-    # entry = menu_handler.insert("living room", parent=h_first_entry, callback=moveToLivingRoom)
+                                                 goal_publisher=goal_publisher))
 
     makeMenuMarker("marker1")
 
@@ -190,7 +155,6 @@ def main():
         rospy.spin()
     except rospy.ROSInterruptException:
         rospy.loginfo("Shutting down")
-
 
 if __name__ == '__main__':
     main()
