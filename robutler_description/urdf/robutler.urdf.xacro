@@ -214,4 +214,48 @@
   </joint>
   <link name="camera_rgb_optical_frame"/>
 
+<link name="cylinder_link">
+  <visual>
+    <geometry>
+      <cylinder radius="0.005" length="1"/>
+    </geometry>
+    <origin xyz="0.01 -0.03 0.46" rpy="0 0 0"/>
+  </visual>
+</link>
+
+<joint name="cylinder_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="cylinder_link"/>
+  <origin xyz="0.01 -0.03 0.122" rpy="0 0 0"/>
+</joint>
+
+<joint name="camera2_joint" type="fixed">
+    <origin xyz="0.01 -0.03 1.075" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera2_link"/>
+</joint>
+
+<link name="camera2_link">
+    <collision>
+      <origin xyz="0.015 -0.03 0.013" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.015 0.030 0.015"/>
+      </geometry>
+    </collision>
+</link>
+
+<joint name="camera2_rgb_joint" type="fixed">
+    <origin xyz="0.013 0.03 0.009" rpy="0 0 0"/>
+    <parent link="camera2_link"/>
+    <child link="camera2_rgb_frame"/>
+</joint>
+<link name="camera2_rgb_frame"/>
+
+<joint name="camera2_rgb_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <parent link="camera2_rgb_frame"/>
+    <child link="camera2_rgb_optical_frame"/>
+</joint>
+<link name="camera2_rgb_optical_frame"/>
+
 </robot>
