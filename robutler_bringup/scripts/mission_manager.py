@@ -12,43 +12,12 @@ from tf.transformations import quaternion_from_euler
 from move_base_msgs.msg import MoveBaseActionResult
 
 server = None
-marker_pos = 1
+marker_pos = 0.5
+empty_marker = None
 
 menu_handler = MenuHandler()
 
 h_first_entry = 0
-h_mode_last = 0
-
-
-def enableCb(feedback):
-    handle = feedback.menu_entry_id
-    state = menu_handler.getCheckState(handle)
-
-    if state == MenuHandler.CHECKED:
-        menu_handler.setCheckState(handle, MenuHandler.UNCHECKED)
-        rospy.loginfo("Hiding first menu entry")
-        menu_handler.setVisible(h_first_entry, False)
-    else:
-        menu_handler.setCheckState(handle, MenuHandler.CHECKED)
-        rospy.loginfo("Showing first menu entry")
-        menu_handler.setVisible(h_first_entry, True)
-
-    menu_handler.reApply(server)
-    rospy.loginfo("update")
-    server.applyChanges()
-
-
-def modeCb(feedback):
-    global h_mode_last
-    menu_handler.setCheckState(h_mode_last, MenuHandler.UNCHECKED)
-    h_mode_last = feedback.menu_entry_id
-    menu_handler.setCheckState(h_mode_last, MenuHandler.CHECKED)
-
-    rospy.loginfo("Switching to menu entry #" + str(h_mode_last))
-    menu_handler.reApply(server)
-    print("DONE")
-    server.applyChanges()
-
 
 def makeBox(msg):
     marker = Marker()
@@ -64,14 +33,12 @@ def makeBox(msg):
 
     return marker
 
-
 def makeBoxControl(msg):
     control = InteractiveMarkerControl()
     control.always_visible = True
     control.markers.append(makeBox(msg))
     msg.controls.append(control)
     return control
-
 
 def makeEmptyMarker(dummyBox=True):
     global marker_pos
@@ -81,7 +48,6 @@ def makeEmptyMarker(dummyBox=True):
     marker_pos += 1
     int_marker.scale = 1
     return int_marker
-
 
 def makeMenuMarker(name):
     int_marker = makeEmptyMarker()
@@ -97,12 +63,8 @@ def makeMenuMarker(name):
 
     server.insert(int_marker)
 
-
-def deepCb(feedback):
-    rospy.loginfo("The deep sub-menu has been found.")
-
-
 def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher):
+    updateText('Moving to ' + location)
 
     print('Called moving to ' + location)
     p = Pose()
@@ -117,34 +79,57 @@ def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher):
     print('Sending Goal move to ' + location)
     goal_publisher.publish(ps)
 
-    # TODO know when move is finished
+    result_msg = rospy.wait_for_message('move_base/result', MoveBaseActionResult)
 
-    try:
-        result_msg = rospy.wait_for_message('/move_base/result', MoveBaseActionResult, timeout=60)
-    except:
-        print('Timeout waiting for moveto')
-        # TODO
-        return
+    updateText(result_msg.status.text)
+    print(result_msg.status.text)
 
-    print('move base completed goal with result ' + str(result_msg))
+def updateText(text):
+    empty_marker.controls[0].markers[0].text = text
+    server.erase('text_marker')
+    server.insert(empty_marker)
 
+    server.applyChanges()
 
 def main():
 
-    global server
+    global server, h_first_entry, empty_marker
 
     # -------------------------------
     # Initialization
     # -------------------------------
     rospy.init_node("mission_manager")
 
+    empty_marker = makeEmptyMarker()
+    empty_marker.name = 'text_marker'
+    empty_marker.pose.position.z = 0.5
+
+    # Create a text marker
+    text_marker = Marker()
+    text_marker.type = Marker.TEXT_VIEW_FACING
+    text_marker.scale.z = 0.4
+    text_marker.color.r = 0.0
+    text_marker.color.g = 0.0
+    text_marker.color.b = 1.0
+    text_marker.color.a = 1.0
+    text_marker.text = "Test"
+    text_marker.action = Marker.ADD
+
+    # Add the text marker to the controls of the empty marker
+    control = InteractiveMarkerControl()
+    control.always_visible = True
+    control.markers.append(text_marker)
+    empty_marker.controls.append(control)
+
     # Create move_base_simple/goal publisher
     goal_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
 
     server = InteractiveMarkerServer("mission")
     print(server)
+    
+    # Publish the empty marker (which contains the text marker)
+    server.insert(empty_marker)
 
-    global h_first_entry, h_mode_last
     h_first_entry = menu_handler.insert("Move to")
 
     entry = menu_handler.insert("kitchen", parent=h_first_entry,
@@ -161,15 +146,15 @@ def main():
                                                  location='bedroom',
                                                  goal_publisher=goal_publisher))
 
-    # entry = menu_handler.insert("living room", parent=h_first_entry, callback=moveToLivingRoom)
-
     makeMenuMarker("marker1")
 
     menu_handler.apply(server, "marker1")
     server.applyChanges()
 
-    rospy.spin()
-
+    try:
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        rospy.loginfo("Shutting down")
 
 if __name__ == '__main__':
     main()
