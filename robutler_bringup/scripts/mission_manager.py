@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from functools import partial
+import os
+import subprocess
 import rospy
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
@@ -84,6 +86,19 @@ def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher):
     updateText(result_msg.status.text)
     print(result_msg.status.text)
 
+def photograph(feedback, x, y, z, R, P, Y, location, goal_publisher):
+
+    moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
+
+    updateText('Taking photograph of ' + location)
+
+    command = ['rosrun', 'psr_tp3', 'photograph.py']
+    subprocess.call(command)
+    rospy.sleep(1)
+
+    updateText('Photograph of ' + location + ' saved')
+    
+
 def updateText(text):
     empty_marker.controls[0].markers[0].text = text
     server.erase('text_marker')
@@ -131,6 +146,7 @@ def main():
     server.insert(empty_marker)
 
     h_first_entry = menu_handler.insert("Move to")
+    h_second_entry = menu_handler.insert("Photograph")
 
     entry = menu_handler.insert("kitchen", parent=h_first_entry,
                                 callback=partial(moveTo,
@@ -144,6 +160,34 @@ def main():
                                                  x=-4.409525, y=-0.182006, z=0,
                                                  R=-0.000007, P=0.003198, Y=1.980398,
                                                  location='bedroom',
+                                                 goal_publisher=goal_publisher))
+
+    entry = menu_handler.insert("living_room", parent=h_first_entry,
+                                callback=partial(moveTo,
+                                                 x=1.213394, y=-0.339148, z=-0.001008,
+                                                 R=-0.000014, P=0.003186, Y=-1.569838,
+                                                 location='living_room',
+                                                 goal_publisher=goal_publisher))
+
+    entry = menu_handler.insert("bedroom", parent=h_second_entry,
+                                callback=partial(photograph,
+                                                 x=-2.787409, y=-1.624719, z=-0.001008,
+                                                 R=-0.000003, P=0.003182, Y=2.338958,
+                                                 location='bedroom',
+                                                 goal_publisher=goal_publisher))
+                                                 
+    entry = menu_handler.insert("living_room", parent=h_second_entry,
+                                callback=partial(photograph,
+                                                 x=1.365698, y=2.405371, z=-0.001008,
+                                                 R=-0.000003, P=0.003182, Y=-1.655986,
+                                                 location='living_room',
+                                                 goal_publisher=goal_publisher))
+
+    entry = menu_handler.insert("kitchen", parent=h_second_entry,
+                                callback=partial(photograph,
+                                                 x=3.449302, y=1.852453, z=-0.001008,
+                                                 R=-0.000004, P=0.003181, Y=-0.603640,
+                                                 location='kitchen',
                                                  goal_publisher=goal_publisher))
 
     makeMenuMarker("marker1")

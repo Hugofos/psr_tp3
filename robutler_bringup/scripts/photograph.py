@@ -11,7 +11,7 @@ class CameraSubscriber:
         rospy.init_node('camera_subscriber', anonymous=True)
         self.bridge = CvBridge()
         self.image_saved = False
-        self.image_sub = rospy.Subscriber('/camera/rgb/image_raw', Image, self.callback)
+        self.image_sub = rospy.Subscriber('/camera2/rgb/image_raw', Image, self.callback)
         rospy.loginfo('Subscribing to cameras topic')
         rospy.sleep(1)
 
