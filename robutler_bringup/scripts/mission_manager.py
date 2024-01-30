@@ -68,11 +68,9 @@ def makeMenuMarker(name):
     server.insert(int_marker)
 
 def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher, update_text = True):
-    print('BANANA')
     if update_text:
         updateText('Moving to ' + location)
 
-    print('Called moving to ' + location)
     p = Pose()
     p.position = Point(x=x, y=y, z=z)
     q = quaternion_from_euler(R, P, Y)  # From euler angles (rpy) to quaternion
@@ -82,14 +80,12 @@ def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher, update_text = T
     ps.pose = p
     ps.header = Header(frame_id='map', stamp=rospy.Time.now())
 
-    print('Sending Goal move to ' + location)
     goal_publisher.publish(ps)
 
     result_msg = rospy.wait_for_message('move_base/result', MoveBaseActionResult)
 
     if update_text:
         updateText(result_msg.status.text)
-    print(result_msg.status.text)
 
 def photograph(feedback, x, y, z, R, P, Y, location, goal_publisher):
 
@@ -214,10 +210,18 @@ def updateText(text):
     server.applyChanges()
 
 def checkPerson(_, goal_publisher):
+
+    r = randint(1, 9)
+
+    updateText('Spawning people in the house')
+    command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-o', 'person_standing']
+    subprocess.call(command)
+
     updateText('Searching for person')
     moveTo(_, x = -2.796223, y = -0.787348, z = 0, R = 0, P = 0.0003175, Y = 2.654732, location = 'bedroom', goal_publisher = goal_publisher)
     rospy.sleep(3)
     result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
+    people = [obj for obj in result_msg.detections.detections if obj.results[0].id == 0]
     if (len(result_msg.detections.detections) < 1):
         moveTo(_, x = 2.244920, y = 1.094999, z = 0, R = 0, P = 0.0003175, Y = -1.692657, location = 'living_room', goal_publisher = goal_publisher)
         rospy.sleep(3)
@@ -227,7 +231,7 @@ def checkPerson(_, goal_publisher):
         rospy.sleep(3)
         result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
 
-    if len(result_msg.detections.detections) < 1:
+    if len(people) < 1:
         updateText('Person not found')
     else:
         updateText('Found person')

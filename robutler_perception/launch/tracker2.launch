@@ -33,8 +33,7 @@
     <param name="result_font" value="$(arg result_font)"/>
     <param name="result_labels" value="$(arg result_labels)"/>
     <param name="result_boxes" value="$(arg result_boxes)"/>
-    <!--rosparam param="classes" subst_value="true">$(arg classes)</rosparam-->
-    <param name="classes" value="0" value-sep=", "/> <!-- person, bicycle -->
+    <rosparam param="classes" subst_value="true">$(arg classes)</rosparam>
     <rosparam param="device" subst_value="true">$(arg device)</rosparam>
   </node>
 
