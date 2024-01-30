@@ -13,7 +13,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
 from tf.transformations import quaternion_from_euler
 from move_base_msgs.msg import MoveBaseActionResult
-from ultralytics_ros.msg import YoloResult
+#from ultralytics_ros.msg import YoloResult
 
 server = None
 marker_pos = 0.5
@@ -107,7 +107,27 @@ def count_spheres_bedroom(feedback, x, y, z, R, P, Y, location, goal_publisher):
     command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-l', 'bedroom', '-o', 'sphere_v']
     subprocess.call(command)
 
-    ## MISSING TRAVELING AND COUNTING
+    count = 0
+
+    command = ['rosrun', 'psr_tp3', 'sphere_detection.py']
+    process = subprocess.Popen(command)
+
+    moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
+    
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
+
+    moveTo(feedback, -7.713984, 0.336816, -0.001007, -0.000004, 0.003176, 2.477500, location, goal_publisher)
+
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Final count: ' + str(count))
+    print(count)
+
+    process.terminate
 
 def count_spheres_living_room(feedback, x, y, z, R, P, Y, location, goal_publisher):
 
@@ -117,7 +137,35 @@ def count_spheres_living_room(feedback, x, y, z, R, P, Y, location, goal_publish
     command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-l', 'living_room', '-o', 'sphere_v']
     subprocess.call(command)
 
-    ## MISSING TRAVELING AND COUNTING 
+    count = 0
+
+    command = ['rosrun', 'psr_tp3', 'sphere_detection.py']
+    process = subprocess.Popen(command)
+
+    moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
+    
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
+
+    moveTo(feedback, 3.685929, -1.113345, -0.001006, -0.000003, 0.003169, -2.691476, location, goal_publisher)
+
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
+
+    moveTo(feedback, 2.973578, -4.053649, -0.001006, -0.000003, 0.003169, -2.691388, location, goal_publisher)
+
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Final count: ' + str(count))
+    print(count)
+
+    process.terminate
 
 def count_spheres_kitchen(feedback, x, y, z, R, P, Y, location, goal_publisher):
 
@@ -127,7 +175,27 @@ def count_spheres_kitchen(feedback, x, y, z, R, P, Y, location, goal_publisher):
     command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-l', 'kitchen', '-o', 'sphere_v']
     subprocess.call(command)
 
-    ## MISSING TRAVELING AND COUNTING 
+    count = 0
+
+    command = ['rosrun', 'psr_tp3', 'sphere_detection.py']
+    process = subprocess.Popen(command)
+
+    moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
+    
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
+
+    moveTo(feedback, 5.948543, -2.964540, -0.001006, -0.000003, 0.003169, 0.302229, location, goal_publisher)
+
+    result_msg = rospy.wait_for_message('spheres/count', Int32)
+    count += int(result_msg.data)
+    updateText('Final count: ' + str(count))
+    print(count)
+
+    process.terminate
 
 def count_cubes(feedback, x, y, z, R, P, Y, location, goal_publisher):
 
@@ -137,67 +205,71 @@ def count_cubes(feedback, x, y, z, R, P, Y, location, goal_publisher):
     command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-o', 'cube_g']
     subprocess.call(command)
 
+    count = 0
 
-    # count = 0
+    command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    process = subprocess.Popen(command)
 
-    # moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
+    moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
     
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
 
-    # moveTo(feedback, -6.486578, -0.466253, -0.001007, -0.000002, 0.003179, 2.286561, location, goal_publisher)
+    moveTo(feedback, -6.486578, -0.466253, -0.001007, -0.000002, 0.003179, 2.286561, location, goal_publisher)
 
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
 
-    # moveTo(feedback, 0.918561, 2.381527, -0.001007, -0.000003, 0.003179, 0.303912, 'living_room', goal_publisher)
+    moveTo(feedback, 0.918561, 2.381527, -0.001007, -0.000003, 0.003179, 0.303912, 'living_room', goal_publisher)
 
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
 
-    # moveTo(feedback, 1.667873, 0.452354, -0.001008, -0.000002, 0.003181, -2.295446, 'living_room', goal_publisher)
+    moveTo(feedback, 1.667873, 0.452354, -0.001008, -0.000002, 0.003181, -2.295446, 'living_room', goal_publisher)
 
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
 
-    # moveTo(feedback, 3.644693, -3.355822, -0.001008, -0.000003, 0.003183, -1.076885, 'living_room', goal_publisher)
+    moveTo(feedback, 3.644693, -3.355822, -0.001008, -0.000003, 0.003183, -1.076885, 'living_room', goal_publisher)
 
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
 
-    # moveTo(feedback, 5.670122, -2.903437, -0.001008, -0.000004, 0.003185, -0.649067, 'kitchen', goal_publisher)
+    moveTo(feedback, 5.670122, -2.903437, -0.001008, -0.000004, 0.003185, -0.649067, 'kitchen', goal_publisher)
 
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Count: ' + str(count))
+    print(count)
+    rospy.sleep(3)
 
-    # moveTo(feedback, 4.130934, -0.895111, -0.001007, -0.000003, 0.003180, 0.566549, 'kitchen', goal_publisher)
+    moveTo(feedback, 4.130934, -0.895111, -0.001007, -0.000003, 0.003180, 0.566549, 'kitchen', goal_publisher)
 
-    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
-    # subprocess.call(command)
-    # result_msg = rospy.wait_for_message('cubes/count', Int32)
-    # count += result_msg
-    # updateText('Final count: ' + count)
+    result_msg = rospy.wait_for_message('cubes/count', Int32)
+    count += int(result_msg.data)
+    updateText('Final count: ' + str(count))
+    print(count)
+
+    process.terminate()
 
 def clean_models(feedback):
 
+    updateText('Cleaning models...')
     command = ['rosrun', 'psr_tp3', 'clean_models.py']
     subprocess.call(command)
 
@@ -330,22 +402,22 @@ def main():
 
     entry = menu_handler.insert("purple spheres bedroom", parent=h_third_entry,
                                 callback=partial(count_spheres_bedroom,
-                                                 x=-3.613628, y=-0.182284, z=-0.001008,
-                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 x=-5.641928, y=-0.543833, z=-0.001008,
+                                                 R=-0.000012, P=0.003185, Y=1.589689,
                                                  location='bedroom',
                                                  goal_publisher=goal_publisher))
     
     entry = menu_handler.insert("purple spheres living_room", parent=h_third_entry,
                                 callback=partial(count_spheres_living_room,
-                                                 x=-3.613628, y=-0.182284, z=-0.001008,
-                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 x=-0.698014, y=2.385116, z=-0.001007,
+                                                 R=-0.000003, P=0.003177, Y=1.432500,
                                                  location='living_room',
                                                  goal_publisher=goal_publisher))
     
     entry = menu_handler.insert("purple spheres kitchen", parent=h_third_entry,
                                 callback=partial(count_spheres_kitchen,
-                                                 x=-3.613628, y=-0.182284, z=-0.001008,
-                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 x=7.161055, y=-3.045271, z=-0.001006,
+                                                 R=-0.000004, P=0.003170, Y=-1.408715,
                                                  location='kitchen',
                                                  goal_publisher=goal_publisher))
 
