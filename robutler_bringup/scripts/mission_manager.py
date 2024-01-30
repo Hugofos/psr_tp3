@@ -4,9 +4,11 @@ from functools import partial
 import os
 import subprocess
 import rospy
+from std_msgs.msg import Int32
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
+from random import randint
 
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
@@ -97,7 +99,109 @@ def photograph(feedback, x, y, z, R, P, Y, location, goal_publisher):
     rospy.sleep(1)
 
     updateText('Photograph of ' + location + ' saved')
+
+def count_spheres_bedroom(feedback, x, y, z, R, P, Y, location, goal_publisher):
+
+    r = randint(1, 3)
+
+    updateText('Spawning spheres in the bedroom')
+    command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-l', 'bedroom', '-o', 'sphere_v']
+    subprocess.call(command)
+
+    ## MISSING TRAVELING AND COUNTING
+
+def count_spheres_living_room(feedback, x, y, z, R, P, Y, location, goal_publisher):
+
+    r = randint(1, 3)
+
+    updateText('Spawning spheres in the living_room')
+    command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-l', 'living_room', '-o', 'sphere_v']
+    subprocess.call(command)
+
+    ## MISSING TRAVELING AND COUNTING 
+
+def count_spheres_kitchen(feedback, x, y, z, R, P, Y, location, goal_publisher):
+
+    r = randint(1, 3)
+
+    updateText('Spawning spheres in the kitchen')
+    command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-l', 'kitchen', '-o', 'sphere_v']
+    subprocess.call(command)
+
+    ## MISSING TRAVELING AND COUNTING 
+
+def count_cubes(feedback, x, y, z, R, P, Y, location, goal_publisher):
+
+    r = randint(1, 9)
+
+    updateText('Spawning cubes in the house')
+    command = ['rosrun', 'psr_tp3', 'spawn_object.py', '-q', str(r), '-o', 'cube_g']
+    subprocess.call(command)
+
+
+    # count = 0
+
+    # moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher)
     
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Count: ' + count)
+
+    # moveTo(feedback, -6.486578, -0.466253, -0.001007, -0.000002, 0.003179, 2.286561, location, goal_publisher)
+
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Count: ' + count)
+
+    # moveTo(feedback, 0.918561, 2.381527, -0.001007, -0.000003, 0.003179, 0.303912, 'living_room', goal_publisher)
+
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Count: ' + count)
+
+    # moveTo(feedback, 1.667873, 0.452354, -0.001008, -0.000002, 0.003181, -2.295446, 'living_room', goal_publisher)
+
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Count: ' + count)
+
+    # moveTo(feedback, 3.644693, -3.355822, -0.001008, -0.000003, 0.003183, -1.076885, 'living_room', goal_publisher)
+
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Count: ' + count)
+
+    # moveTo(feedback, 5.670122, -2.903437, -0.001008, -0.000004, 0.003185, -0.649067, 'kitchen', goal_publisher)
+
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Count: ' + count)
+
+    # moveTo(feedback, 4.130934, -0.895111, -0.001007, -0.000003, 0.003180, 0.566549, 'kitchen', goal_publisher)
+
+    # command = ['rosrun', 'psr_tp3', 'cube_detection.py']
+    # subprocess.call(command)
+    # result_msg = rospy.wait_for_message('cubes/count', Int32)
+    # count += result_msg
+    # updateText('Final count: ' + count)
+
+def clean_models(feedback):
+
+    command = ['rosrun', 'psr_tp3', 'clean_models.py']
+    subprocess.call(command)
+
 
 def updateText(text):
     empty_marker.controls[0].markers[0].text = text
@@ -127,7 +231,7 @@ def main():
     text_marker.color.g = 0.0
     text_marker.color.b = 1.0
     text_marker.color.a = 1.0
-    text_marker.text = "Test"
+    text_marker.text = "Waiting..."
     text_marker.action = Marker.ADD
 
     # Add the text marker to the controls of the empty marker
@@ -147,6 +251,7 @@ def main():
 
     h_first_entry = menu_handler.insert("Move to")
     h_second_entry = menu_handler.insert("Photograph")
+    h_third_entry = menu_handler.insert("Count")
 
     entry = menu_handler.insert("kitchen", parent=h_first_entry,
                                 callback=partial(moveTo,
@@ -189,6 +294,36 @@ def main():
                                                  R=-0.000004, P=0.003181, Y=-0.603640,
                                                  location='kitchen',
                                                  goal_publisher=goal_publisher))
+    
+    entry = menu_handler.insert("total green cubes", parent=h_third_entry,
+                                callback=partial(count_cubes,
+                                                 x=-3.613628, y=-0.182284, z=-0.001008,
+                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 location='bedroom',
+                                                 goal_publisher=goal_publisher))
+
+    entry = menu_handler.insert("purple spheres bedroom", parent=h_third_entry,
+                                callback=partial(count_spheres_bedroom,
+                                                 x=-3.613628, y=-0.182284, z=-0.001008,
+                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 location='bedroom',
+                                                 goal_publisher=goal_publisher))
+    
+    entry = menu_handler.insert("purple spheres living_room", parent=h_third_entry,
+                                callback=partial(count_spheres_living_room,
+                                                 x=-3.613628, y=-0.182284, z=-0.001008,
+                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 location='living_room',
+                                                 goal_publisher=goal_publisher))
+    
+    entry = menu_handler.insert("purple spheres kitchen", parent=h_third_entry,
+                                callback=partial(count_spheres_kitchen,
+                                                 x=-3.613628, y=-0.182284, z=-0.001008,
+                                                 R=-0.000002, P=0.003183, Y=1.888727,
+                                                 location='kitchen',
+                                                 goal_publisher=goal_publisher))
+
+    entry = menu_handler.insert("clean models", callback=clean_models)
 
     makeMenuMarker("marker1")
 
