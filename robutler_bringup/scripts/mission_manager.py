@@ -13,7 +13,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
 from tf.transformations import quaternion_from_euler
 from move_base_msgs.msg import MoveBaseActionResult
-#from ultralytics_ros.msg import YoloResult
+from ultralytics_ros.msg import YoloResult
 
 server = None
 marker_pos = 0.5
@@ -291,17 +291,19 @@ def checkPerson(_, goal_publisher):
 
     updateText('Searching for person')
     moveTo(_, x = -2.796223, y = -0.787348, z = 0, R = 0, P = 0.0003175, Y = 2.654732, location = 'bedroom', goal_publisher = goal_publisher)
-    rospy.sleep(3)
+    rospy.sleep(5)
     result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
     people = [obj for obj in result_msg.detections.detections if obj.results[0].id == 0]
-    if (len(result_msg.detections.detections) < 1):
+    if (len(people) < 1):
         moveTo(_, x = 2.244920, y = 1.094999, z = 0, R = 0, P = 0.0003175, Y = -1.692657, location = 'living_room', goal_publisher = goal_publisher)
-        rospy.sleep(3)
+        rospy.sleep(5)
         result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
-    if (len(result_msg.detections.detections) < 1):
+        people = [obj for obj in result_msg.detections.detections if obj.results[0].id == 0]
+    if (len(people) < 1):
         moveTo(_, x = 2.527817, y = 1.706612, z = 0, R = 0, P = 0.0003175, Y = -0.580914, location = 'kitchen', goal_publisher = goal_publisher)
-        rospy.sleep(3)
+        rospy.sleep(5)
         result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
+        people = [obj for obj in result_msg.detections.detections if obj.results[0].id == 0]
 
     if len(people) < 1:
         updateText('Person not found')
