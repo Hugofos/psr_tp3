@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from functools import partial
-import os
 import subprocess
 import rospy
 from interactive_markers.interactive_marker_server import *
@@ -12,6 +11,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
 from tf.transformations import quaternion_from_euler
 from move_base_msgs.msg import MoveBaseActionResult
+from ultralytics_ros.msg import YoloResult
 
 server = None
 marker_pos = 0.5
@@ -65,8 +65,10 @@ def makeMenuMarker(name):
 
     server.insert(int_marker)
 
-def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher):
-    updateText('Moving to ' + location)
+def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher, update_text = True):
+    print('BANANA')
+    if update_text:
+        updateText('Moving to ' + location)
 
     print('Called moving to ' + location)
     p = Pose()
@@ -83,7 +85,8 @@ def moveTo(feedback, x, y, z, R, P, Y, location, goal_publisher):
 
     result_msg = rospy.wait_for_message('move_base/result', MoveBaseActionResult)
 
-    updateText(result_msg.status.text)
+    if update_text:
+        updateText(result_msg.status.text)
     print(result_msg.status.text)
 
 def photograph(feedback, x, y, z, R, P, Y, location, goal_publisher):
@@ -106,6 +109,25 @@ def updateText(text):
 
     server.applyChanges()
 
+def checkPerson(_, goal_publisher):
+    updateText('Searching for person')
+    moveTo(_, x = -2.796223, y = -0.787348, z = 0, R = 0, P = 0.0003175, Y = 2.654732, location = 'bedroom', goal_publisher = goal_publisher)
+    rospy.sleep(3)
+    result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
+    if (len(result_msg.detections.detections) < 1):
+        moveTo(_, x = 2.244920, y = 1.094999, z = 0, R = 0, P = 0.0003175, Y = -1.692657, location = 'living_room', goal_publisher = goal_publisher)
+        rospy.sleep(3)
+        result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
+    if (len(result_msg.detections.detections) < 1):
+        moveTo(_, x = 2.527817, y = 1.706612, z = 0, R = 0, P = 0.0003175, Y = -0.580914, location = 'kitchen', goal_publisher = goal_publisher)
+        rospy.sleep(3)
+        result_msg = rospy.wait_for_message('yolo_result2', YoloResult)
+
+    if len(result_msg.detections.detections) < 1:
+        updateText('Person not found')
+    else:
+        updateText('Found person')
+
 def main():
 
     global server, h_first_entry, empty_marker
@@ -127,7 +149,7 @@ def main():
     text_marker.color.g = 0.0
     text_marker.color.b = 1.0
     text_marker.color.a = 1.0
-    text_marker.text = "Test"
+    text_marker.text = ""
     text_marker.action = Marker.ADD
 
     # Add the text marker to the controls of the empty marker
@@ -147,6 +169,7 @@ def main():
 
     h_first_entry = menu_handler.insert("Move to")
     h_second_entry = menu_handler.insert("Photograph")
+    h_third_entry = menu_handler.insert("Actions")
 
     entry = menu_handler.insert("kitchen", parent=h_first_entry,
                                 callback=partial(moveTo,
@@ -189,6 +212,8 @@ def main():
                                                  R=-0.000004, P=0.003181, Y=-0.603640,
                                                  location='kitchen',
                                                  goal_publisher=goal_publisher))
+
+    entry = menu_handler.insert("person", parent=h_third_entry, callback=partial(checkPerson, goal_publisher = goal_publisher))
 
     makeMenuMarker("marker1")
 
