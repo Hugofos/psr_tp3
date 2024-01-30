@@ -141,9 +141,9 @@ def main():
     f = open(package_path + 'person_standing/model.sdf', 'r')
     objects['person_standing'] = {'name': 'person_standing', 'sdf': f.read()}
 
-    # add object cube_b
-    f = open(package_path + 'cube_b/model.sdf', 'r')
-    objects['cube_b'] = {'name': 'cube_b', 'sdf': f.read()}
+    # add object cube_g
+    f = open(package_path + 'cube_g/model.sdf', 'r')
+    objects['cube_g'] = {'name': 'cube_g', 'sdf': f.read()}
     print(objects)
 
     # Check if given object and location are valid
@@ -169,8 +169,10 @@ def main():
 
     service_client = rospy.ServiceProxy(service_name, SpawnModel)
 
-    if args['quantity'] > 3:
-        print('Quantity of objects should be equal or lower than 3')
+    if args['quantity'] > 3 and args['location'] != 'house':
+        print('Quantity of objects should be equal or lower than 3 for specific divisions')
+    elif args['quantity'] > 9 and args['location'] == 'house':
+        print('This house can you only have 9 objects of each model')
     else:
 
         print('Spawning object or objects ...')
